@@ -41,6 +41,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2023-03-01' = {
       computerName: vmName
       adminUsername: 'azureuser'
       adminPassword: 'ChangeThisPassword123!'
+     customData: loadFileAsBase64('../app/cloud-init.yaml')
     }
     storageProfile: {
       imageReference: {

@@ -1,4 +1,9 @@
-param location string = 'uksouth'
+param location string = resourceGroup().location
+
+@secure()
+param adminPassword string
+
+param adminUserName string = 'azureuser'
 
 module network './network.bicep' = {
   name: 'network'
@@ -10,7 +15,11 @@ module network './network.bicep' = {
 module compute './compute.bicep' = {
   name: 'compute'
   params: {
-    location: location
+    vmConfig: {
+      subnetId: network.outputs.subnetId
+      adminUserName: adminUserName
+      adminPassword: adminPassword
+    }
   }
 }
 

@@ -1,17 +1,11 @@
-param location string = resourceGroup().location
-param vmName string = 'iac-vm'
-param subnetId string
-
-resource publicIp 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
-  name: '${vmName}-pip'
-  location: location
-  sku: {
-    name: 'Basic'
-  }
-  properties: {
-    publicIPAllocationMethod: 'Dynamic'
-  }
+param vmConfig object {
+  subnetId: string
+  adminUserName: string
+  adminPassword: string
 }
+
+param vmName string = 'iac-vm'
+param location string = resourceGroup().location
 
 resource nic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
   name: '${vmName}-nic'
@@ -22,11 +16,9 @@ resource nic 'Microsoft.Network/networkInterfaces@2023-05-01' = {
         name: 'ipconfig1'
         properties: {
           subnet: {
-            id: subnetId
+            id: vmConfig.subnetId
           }
-          publicIPAddress: {
-            id: publicIp.id
-          }
+          privateIPAllocationMethod: 'Dynamic'
         }
       }
     ]
@@ -42,15 +34,15 @@ resource vm 'Microsoft.Compute/virtualMachines@2023-03-01' = {
     }
     osProfile: {
       computerName: vmName
-      adminUsername: 'azureuser'
-      adminPassword: 'ChangeThisPassword123!'
+      adminUsername: vmConfig.adminUserName
+      adminPassword: vmConfig.adminPassword
       customData: loadFileAsBase64('../app/cloud-init.yaml')
     }
     storageProfile: {
       imageReference: {
         publisher: 'Canonical'
-        offer: '0001-com-ubuntu-server-focal'
-        sku: '20_04-lts'
+        offer: '0001-com-ubuntu-server-jammy'
+        sku: '22_04-lts'
         version: 'latest'
       }
       osDisk: {
